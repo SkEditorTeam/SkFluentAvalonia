@@ -224,31 +224,38 @@ public class TabViewListView : ListBox
                     //         This case is handled in the PreviewPointerPressed handler. No dragging actions
                     //         are permitted on this TabView
 
-                    if (!CanDragItems)
+                    try
                     {
-                        // This is a reorder action only (case 3)
-                        // Reorder only actions we handle ourselves
-                        _processReorder = true;
-                        BeginReorder(e);
-                        e.Handled = true;
-                    }
-                    else if (!CanReorderItems)
-                    {
-                        // This is a drag action only (case 2)
-                        // We hand this over to DragDrop
+                        if (!CanDragItems)
+                        {
+                            // This is a reorder action only (case 3)
+                            // Reorder only actions we handle ourselves
+                            _processReorder = true;
+                            BeginReorder(e);
+                            e.Handled = true;
+                        }
+                        else if (!CanReorderItems)
+                        {
+                            // This is a drag action only (case 2)
+                            // We hand this over to DragDrop
 
-                        BeginDragDrop(e, false);
-                        e.Handled = true;
-                        return;
+                            BeginDragDrop(e, false);
+                            e.Handled = true;
+                            return;
+                        }
+                        else
+                        {
+                            // This is a full drag / reorder action (case 1)
+                            // We hand this over to DragDrop & will use the DragDrop handlers
+                            // to manage everything.
+                            BeginDragDrop(e, true);
+                            e.Handled = true;
+                            return;
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        // This is a full drag / reorder action (case 1)
-                        // We hand this over to DragDrop & will use the DragDrop handlers
-                        // to manage everything.
-                        BeginDragDrop(e, true);
-                        e.Handled = true;
-                        return;
+                        Console.WriteLine(ex);
                     }
                 }
             }
@@ -442,7 +449,6 @@ public class TabViewListView : ListBox
 
     private async void BeginDragDrop(PointerEventArgs args, bool hasReorder)
     {
-        // First fire DragItemsStarting
         var disArgs = new DragItemsStartingEventArgs
         {
             Items = new[] { ItemsView.GetAt(_dragIndex) },

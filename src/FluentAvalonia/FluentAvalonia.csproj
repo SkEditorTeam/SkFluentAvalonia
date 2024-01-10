@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <MicroComGeneratorRuntimeNamespace>MicroCom.Runtime</MicroComGeneratorRuntimeNamespace>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <PackageId>FluentAvaloniaUI</PackageId>
+    <PackageId>SkFluentAvalonia</PackageId>
 
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
@@ -18,6 +18,12 @@
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>SkFluentAvalonia</Title>
+    <Description>A fork of FluentAvalonia, a control library focused on fluent design and bringing more WinUI controls into Avalonia </Description>
+    <RepositoryUrl>https://github.com/SkEditorTeam/SkFluentAvalonia</RepositoryUrl>
+    <PackageTags />
+    <Version>2.0.4.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
