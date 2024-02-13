@@ -449,67 +449,71 @@ public class TabViewListView : ListBox
 
     private async void BeginDragDrop(PointerEventArgs args, bool hasReorder)
     {
-        var disArgs = new DragItemsStartingEventArgs
+        try
         {
-            Items = new[] { ItemsView.GetAt(_dragIndex) },
-            Data = new Data.DataPackage()
-        };
-        DragItemsStarting?.Invoke(this, disArgs);
+            var disArgs = new DragItemsStartingEventArgs
+            {
+                Items = new[] { ItemsView.GetAt(_dragIndex) },
+                Data = new Data.DataPackage()
+            };
+            DragItemsStarting?.Invoke(this, disArgs);
 
-        if (disArgs.Cancel)
-        {
+            if (disArgs.Cancel)
+            {
+                _initialPoint = null;
+                _dragItem = null;
+                _dragIndex = -1;
+                return;
+            }
+
+            _isInDrag = true;
+
+            var effects = disArgs.Data.RequestedOperation;
+
+            if (hasReorder)
+            {
+                _processReorder = true;
+                BeginReorder(args);
+                effects |= DragDropEffects.Move;
+            }
+            else
+            {
+                // We need to clear the tooltip here otherwise it will end up showing
+                // during the drag operation - and that's undesirable
+                // We'll store it so we can restore it later
+                _dragItemToolTip = ToolTip.GetTip(_dragItem);
+                if (ToolTip.GetIsOpen(_dragItem))
+                {
+                    ToolTip.SetIsOpen(_dragItem, false);
+                }
+            }
+
+            var dropResult =
+                await DragDrop.DoDragDrop(args, disArgs.Data, effects);
+
+            _isInDrag = false;
+            if (hasReorder)
+            {
+                EndReorder();
+            }
+            else
+            {
+                (ItemsPanelRoot as TabViewStackPanel).ClearReorder();
+
+                if (ToolTip.GetIsOpen(_dragItem))
+                {
+                    ToolTip.SetIsOpen(_dragItem, false);
+                }
+                ToolTip.SetTip(_dragItem, _dragItemToolTip);
+            }
+
+            DragItemsCompleted?.Invoke(this, new DragItemsCompletedEventArgs(dropResult, disArgs.Items));
+
             _initialPoint = null;
             _dragItem = null;
             _dragIndex = -1;
-            return;
         }
-
-        _isInDrag = true;
-
-        var effects = disArgs.Data.RequestedOperation;
-
-        if (hasReorder)
-        {
-            _processReorder = true;
-            BeginReorder(args);
-            effects |= DragDropEffects.Move;
-        }
-        else
-        {
-            // We need to clear the tooltip here otherwise it will end up showing
-            // during the drag operation - and that's undesirable
-            // We'll store it so we can restore it later
-            _dragItemToolTip = ToolTip.GetTip(_dragItem);
-            if (ToolTip.GetIsOpen(_dragItem))
-            {
-                ToolTip.SetIsOpen(_dragItem, false);
-            }
-        }
-
-        var dropResult =
-            await DragDrop.DoDragDrop(args, disArgs.Data, effects);
-
-        _isInDrag = false;
-        if (hasReorder)
-        {
-            EndReorder();
-        }
-        else
-        {
-            (ItemsPanelRoot as TabViewStackPanel).ClearReorder();
-
-            if (ToolTip.GetIsOpen(_dragItem))
-            {
-                ToolTip.SetIsOpen(_dragItem, false);
-            }
-            ToolTip.SetTip(_dragItem, _dragItemToolTip);
-        }
-
-        DragItemsCompleted?.Invoke(this, new DragItemsCompletedEventArgs(dropResult, disArgs.Items));
-
-        _initialPoint = null;
-        _dragItem = null;
-        _dragIndex = -1;
+        catch { }
     }
 
     private void OnDragEnter(object sender, DragEventArgs e)
