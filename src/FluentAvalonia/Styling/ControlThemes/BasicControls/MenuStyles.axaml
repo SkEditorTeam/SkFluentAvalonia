@@ -109,6 +109,14 @@
                 </Border>
             </ControlTemplate>
         </Setter>
+        
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Duration="00:00:00.1" Property="Background" />
+				</Transitions>
+			</Setter>
+		</Style>
 
         <Style Selector="^:selected">
             <Style Selector="^ /template/ Border#PART_LayoutRoot">
