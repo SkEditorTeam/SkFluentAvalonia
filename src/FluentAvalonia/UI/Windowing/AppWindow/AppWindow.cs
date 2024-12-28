@@ -22,12 +22,17 @@ namespace FluentAvalonia.UI.Windowing;
 /// </summary>
 public partial class AppWindow : Window
 {
+    /// <summary>
+    /// If changed to true, AppWindow will always fallback to the default Avalonia window
+    /// </summary>
+    public static bool AlwaysFallback { get; set; }
+
     public AppWindow()
     {
         TemplateSettings = new AppWindowTemplateSettings();
         _titleBar = new AppWindowTitleBar(this);
 
-        if (OSVersionHelper.IsWindows() && !Design.IsDesignMode)
+        if (OSVersionHelper.IsWindows() && !Design.IsDesignMode && !AlwaysFallback)
         {
             InitializeAppWindow();
         }
