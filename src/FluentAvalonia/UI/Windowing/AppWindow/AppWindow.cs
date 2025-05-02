@@ -98,7 +98,10 @@ public partial class AppWindow : Window
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
+        if (!this.IsWindows || change.Property != WindowStateProperty)  // Lazy base call OnPropertyChanged
+        {
+            base.OnPropertyChanged(change);
+        }
 
         if (change.Property == IconProperty)
         {
@@ -116,6 +119,7 @@ public partial class AppWindow : Window
             {
                 HandleFullScreenTransition(change.GetNewValue<WindowState>());
                 OnExtendsContentIntoTitleBarChanged(TitleBar.ExtendsContentIntoTitleBar);
+                base.OnPropertyChanged(change);  // Enable window size modifications before Avalonia's own logic
             }
 
             if (!_hasShown)
@@ -141,7 +145,7 @@ public partial class AppWindow : Window
                         _win32Manager.LastUserHeight = newV;
                     }
                 }
-            }            
+            }
         }
     }
 

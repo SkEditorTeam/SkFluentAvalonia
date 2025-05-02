@@ -410,8 +410,13 @@ public class TabViewListView : ListBox
 
         if (!_isInDrag && _initialPoint.HasValue)
         {
-            // TODO: The API was changed (and set to deprecated) so I'm commenting this out for now
-            //_dragReorderPopup.Host?.ConfigurePosition(new PopupPositionRequest(this, PlacementMode.Pointer, _popupOffset));
+            _dragReorderPopup.CustomPopupPlacementCallback = new CustomPopupPlacementCallback(x =>
+            {
+                x.Offset = _popupOffset;
+            });
+            //var req = PopupPositionRequest.
+            //_dragReorderPopup.Host?
+            //    .ConfigurePosition(this, PlacementMode.Pointer, _popupOffset);
         }
     }
 
