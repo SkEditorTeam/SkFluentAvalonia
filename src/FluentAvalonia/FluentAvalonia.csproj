@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <MicroComGeneratorRuntimeNamespace>MicroCom.Runtime</MicroComGeneratorRuntimeNamespace>
@@ -23,7 +23,7 @@
     <Description>A fork of FluentAvalonia, a control library focused on fluent design and bringing more WinUI controls into Avalonia </Description>
     <RepositoryUrl>https://github.com/SkEditorTeam/SkFluentAvalonia</RepositoryUrl>
     <PackageTags />
-    <Version>2.1.2</Version>
+    <Version>2.2.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
