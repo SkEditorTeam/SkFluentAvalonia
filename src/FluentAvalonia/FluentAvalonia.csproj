@@ -23,7 +23,7 @@
     <Description>A fork of FluentAvalonia, a control library focused on fluent design and bringing more WinUI controls into Avalonia </Description>
     <RepositoryUrl>https://github.com/SkEditorTeam/SkFluentAvalonia</RepositoryUrl>
     <PackageTags />
-    <Version>2.2.2</Version>
+    <Version>2.2.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
