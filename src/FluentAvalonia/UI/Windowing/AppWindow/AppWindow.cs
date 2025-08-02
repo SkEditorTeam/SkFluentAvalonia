@@ -33,6 +33,8 @@ public partial class AppWindow : Window
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetDpiForWindow(HWND hwnd);
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr SendMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
 
     public AppWindow()
     {
@@ -204,10 +206,6 @@ public partial class AppWindow : Window
 
         LoadApp();
     }
-
-// Dodaj SendMessage import
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern IntPtr SendMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
 
     protected override void OnClosed(EventArgs e)
     {
