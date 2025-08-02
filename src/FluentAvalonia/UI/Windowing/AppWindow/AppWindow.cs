@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -8,11 +9,14 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using FluentAvalonia.Core;
 using FluentAvalonia.Interop;
+using FluentAvalonia.Interop.Win32;
 using FluentAvalonia.UI.Controls.Primitives;
 using FluentAvalonia.UI.Media;
+using static FluentAvalonia.Interop.Win32Interop;
 
 namespace FluentAvalonia.UI.Windowing;
 
@@ -26,6 +30,9 @@ public partial class AppWindow : Window
     /// If changed to true, AppWindow will always fallback to the default Avalonia window
     /// </summary>
     public static bool AlwaysFallback { get; set; }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint GetDpiForWindow(HWND hwnd);
 
     public AppWindow()
     {
@@ -57,26 +64,26 @@ public partial class AppWindow : Window
             //       keep this here as a reminder
             //if (!CanResize)
             //{
-                //var wid = (16 * PlatformImpl.RenderScaling);
-                //var hgt = (8 * PlatformImpl.RenderScaling);
-                //sz = new Size(sz.Width + wid, sz.Height + hgt);
+            //var wid = (16 * PlatformImpl.RenderScaling);
+            //var hgt = (8 * PlatformImpl.RenderScaling);
+            //sz = new Size(sz.Width + wid, sz.Height + hgt);
             //}
 
             if (SystemCaptionControl != null)
                 _titleBar.SetInset(SystemCaptionControl.DesiredSize.Width, FlowDirection);
-        }        
+        }
 
         return sz;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        base.OnApplyTemplate(e);      
+        base.OnApplyTemplate(e);
 
         if (IsWindows && !Design.IsDesignMode)
         {
             _templateRoot = e.NameScope.Find<Border>("RootBorder");
-                        
+
             _captionButtons = e.NameScope.Find<MinMaxCloseControl>("SystemCaptionButtons");
             _defaultTitleBar = e.NameScope.Find<Panel>("DefaultTitleBar");
 
@@ -98,7 +105,7 @@ public partial class AppWindow : Window
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (!this.IsWindows || change.Property != WindowStateProperty)  // Lazy base call OnPropertyChanged
+        if (!this.IsWindows || change.Property != WindowStateProperty) // Lazy base call OnPropertyChanged
         {
             base.OnPropertyChanged(change);
         }
@@ -119,7 +126,7 @@ public partial class AppWindow : Window
             {
                 HandleFullScreenTransition(change.GetNewValue<WindowState>());
                 OnExtendsContentIntoTitleBarChanged(TitleBar.ExtendsContentIntoTitleBar);
-                base.OnPropertyChanged(change);  // Enable window size modifications before Avalonia's own logic
+                base.OnPropertyChanged(change); // Enable window size modifications before Avalonia's own logic
             }
 
             if (!_hasShown)
@@ -149,49 +156,64 @@ public partial class AppWindow : Window
         }
     }
 
-    protected override async void OnOpened(EventArgs e)
+    protected async override void OnOpened(EventArgs e)
     {
+        base.OnOpened(e);
+
         if (IsWindows)
         {
-            _hasShown = true;
-
-            if (!double.IsNaN(_win32Manager.LastUserHeight))
+            Dispatcher.UIThread.Post(() =>
             {
-                Height = _win32Manager.LastUserHeight;
-            }
+                var handle = TryGetPlatformHandle();
+                
+                if (handle == null) return;
 
-            if (!double.IsNaN(_win32Manager.LastUserWidth))
-            {
-                Width = _win32Manager.LastUserWidth;
-            }
+                var hwnd = (HWND)handle.Handle;
+
+                var realDpi = GetDpiForWindow(hwnd);
+                var avaloniaDpi = (uint)(RenderScaling * 96.0);
+
+                if (realDpi == avaloniaDpi) return;
+                
+                WPARAM wParam = (realDpi << 16) | realDpi;
+
+                unsafe
+                {
+                    RECT suggestedRect;
+                    GetWindowRect(hwnd, &suggestedRect);
+
+                    SendMessage(hwnd, 0x02E0, wParam,
+                        (IntPtr)(&suggestedRect));
+                }
+            }, DispatcherPriority.Background);
         }
+
+        if (_splashContext is not { HasShownSplashScreen: false } || Design.IsDesignMode) return;
         
+        PseudoClasses.Set(":splashOpen", true);
+        var time = DateTime.Now;
 
-        if (_splashContext != null && !_splashContext.HasShownSplashScreen && !Design.IsDesignMode)
+        await _splashContext.RunJobs();
+
+        var delta = DateTime.Now - time;
+        if (delta.TotalMilliseconds < _splashContext.SplashScreen.MinimumShowTime)
         {
-            PseudoClasses.Set(":splashOpen", true);
-            var time = DateTime.Now;
-
-            // n00b async/await mistake - need to await here, thansk to GH taj-ny for finding and fixing this
-            await _splashContext.RunJobs();
-
-            var delta = DateTime.Now - time;
-            if (delta.TotalMilliseconds < _splashContext.SplashScreen.MinimumShowTime)
-            {
-                await Task.Delay(Math.Max(1, _splashContext.SplashScreen.MinimumShowTime - (int)delta.TotalMilliseconds));
-            }
-
-            LoadApp();
+            await Task.Delay(
+                Math.Max(1, _splashContext.SplashScreen.MinimumShowTime - (int)delta.TotalMilliseconds));
         }
 
-        base.OnOpened(e);
+        LoadApp();
     }
+
+// Dodaj SendMessage import
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr SendMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
 
     protected override void OnClosed(EventArgs e)
     {
         _splashContext?.TryCancel();
 
-        base.OnClosed(e);     
+        base.OnClosed(e);
     }
 
     internal void OnExtendsContentIntoTitleBarChanged(bool isExtended)
@@ -204,7 +226,7 @@ public partial class AppWindow : Window
         else
         {
             TemplateSettings.IsTitleBarContentVisible = true;
-            
+
             if (WindowState != WindowState.FullScreen)
                 TemplateSettings.ContentMargin = new Thickness(0, _titleBar.Height, 0, 0);
         }
@@ -329,7 +351,7 @@ public partial class AppWindow : Window
     }
 
     internal void UpdateContentPosition(Thickness t)
-    {        
+    {
         if (_templateRoot != null)
             _templateRoot.Margin = t;
     }
@@ -357,7 +379,7 @@ public partial class AppWindow : Window
             OnExtendsContentIntoTitleBarChanged(_titleBar.ExtendsContentIntoTitleBar);
         }
     }
-    
+
     private void SetTitleBarColors()
     {
         if (_templateRoot == null)
@@ -409,16 +431,21 @@ public partial class AppWindow : Window
         SetResource(s_SysCaptionForeground, _titleBar.ButtonForegroundColor ?? textColor);
 
         SetResource(s_SysCaptionBackgroundHover, _titleBar.ButtonHoverBackgroundColor ??
-            (foundAccent ? Unsafe.Unbox<Color>(sysColor) : Color.FromArgb(23, 0, 0, 0)));
+                                                 (foundAccent ?
+                                                     Unsafe.Unbox<Color>(sysColor) :
+                                                     Color.FromArgb(23, 0, 0, 0)));
         SetResource(s_SysCaptionForegroundHover, _titleBar.ButtonHoverForegroundColor ?? textColor);
 
         SetResource(s_SysCaptionBackgroundPressed, _titleBar.ButtonPressedBackgroundColor ??
-            (foundAccent ? Unsafe.Unbox<Color>(sysColor) : Color.FromArgb(52, 0, 0, 0)));
-        SetResource(s_SysCaptionForegroundPressed, _titleBar.ButtonPressedForegroundColor ?? GetPressedColor(textColor));
+                                                   (foundAccent ?
+                                                       Unsafe.Unbox<Color>(sysColor) :
+                                                       Color.FromArgb(52, 0, 0, 0)));
+        SetResource(s_SysCaptionForegroundPressed,
+            _titleBar.ButtonPressedForegroundColor ?? GetPressedColor(textColor));
 
         SetResource(s_SysCaptionBackgroundInactive, _titleBar.ButtonInactiveBackgroundColor ?? Colors.Transparent);
         SetResource(s_SysCaptionForegroundInactive, _titleBar.ButtonInactiveForegroundColor ??
-            (accentVariant ?? Colors.Gray));
+                                                    (accentVariant ?? Colors.Gray));
 
 
         void SetResource(string name, Color color)
@@ -442,12 +469,13 @@ public partial class AppWindow : Window
         }
     }
 
-    private static void OnAllowInteractionInTitleBarChanged(Control control, AvaloniaPropertyChangedEventArgs propChangeArgs)
+    private static void OnAllowInteractionInTitleBarChanged(Control control,
+        AvaloniaPropertyChangedEventArgs propChangeArgs)
     {
         if (control is TopLevel tl || control is Popup)
             return; //throw new InvalidOperationException("AllowTitleBarHitTest cannot be set on TopLevels or Popups");
 
-        
+
         if (propChangeArgs.GetNewValue<bool>())
         {
             // Control likely isn't attached to the visual tree yet so we have no way of attaching this to the 
@@ -471,7 +499,7 @@ public partial class AppWindow : Window
                 aw.RemoveExcludeHitTestItem(control);
             }
         }
-        
+
         void AwaitControlAttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs args)
         {
             var control = sender as Control;
@@ -504,7 +532,7 @@ public partial class AppWindow : Window
     {
         if (_excludeHitTestList == null)
             return;
-            
+
         for (int i = _excludeHitTestList.Count - 1; i >= 0; i--)
         {
             if (_excludeHitTestList[i].TryGetTarget(out var target) && target == c)
@@ -515,7 +543,6 @@ public partial class AppWindow : Window
         }
     }
 
-    
 
     private async void LoadApp()
     {
@@ -534,22 +561,12 @@ public partial class AppWindow : Window
             FillMode = FillMode.Forward,
             Children =
             {
-                new KeyFrame
-                {
-                    Cue = new Cue(0d),
-                    Setters =
-                    {
-                        new Setter(OpacityProperty, 1d)
-                    }
-                },
+                new KeyFrame { Cue = new Cue(0d), Setters = { new Setter(OpacityProperty, 1d) } },
                 new KeyFrame
                 {
                     Cue = new Cue(1d),
-                    Setters =
-                    {
-                        new Setter(OpacityProperty, 0d),
-                    },
-                    KeySpline = new KeySpline(0,0,0,1)
+                    Setters = { new Setter(OpacityProperty, 0d), },
+                    KeySpline = new KeySpline(0, 0, 0, 1)
                 }
             }
         };
@@ -559,22 +576,12 @@ public partial class AppWindow : Window
             Duration = TimeSpan.FromMilliseconds(167),
             Children =
             {
-                new KeyFrame
-                {
-                    Cue = new Cue(0d),
-                    Setters =
-                    {
-                        new Setter(OpacityProperty, 0d)
-                    }
-                },
+                new KeyFrame { Cue = new Cue(0d), Setters = { new Setter(OpacityProperty, 0d) } },
                 new KeyFrame
                 {
                     Cue = new Cue(1d),
-                    Setters =
-                    {
-                        new Setter(OpacityProperty, 1d),
-                    },
-                    KeySpline = new KeySpline(0,0,0,1)
+                    Setters = { new Setter(OpacityProperty, 1d), },
+                    KeySpline = new KeySpline(0, 0, 0, 1)
                 }
             }
         };
