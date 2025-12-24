@@ -1086,8 +1086,7 @@ public partial class FAComboBox : HeaderedSelectingItemsControl
             if (_lastBinding != binding)
             {
                 _lastBinding = binding;
-                var ib = binding.Initiate(this, ValueProperty);
-                BindingOperations.Apply(this, ValueProperty, ib, null);
+                Bind(ValueProperty, binding);
             }
 
             return GetValue(ValueProperty);
