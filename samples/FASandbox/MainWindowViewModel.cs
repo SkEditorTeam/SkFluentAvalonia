@@ -5,6 +5,8 @@ using System.Windows.Input;
 
 namespace FASandbox;
 
+// This is set up for quick testing purposes.
+
 public class MainWindowViewModel : INotifyPropertyChanged
 {
     public MainWindowViewModel()
