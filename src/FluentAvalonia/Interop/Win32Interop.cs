@@ -68,14 +68,14 @@ internal static unsafe partial class Win32Interop
 
     public static int GetSystemMetricsWithFallback(int nIndex, uint dpi)
     {
-        if (OSVersionHelper.IsWindowsAtLeast(10, 0, 14393)) // 1607
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 14393)) // 1607
             return GetSystemMetricsForDpi(nIndex, dpi);
         return GetSystemMetrics(nIndex);
     }
     
     public static void AdjustWindowRectExWithFallback(RECT* lpRect, int dwStyle, BOOL bMenu, int dwExStyle, int dpi)
     {
-        if (OSVersionHelper.IsWindowsAtLeast(10, 0, 14393)) // 1607
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 14393)) // 1607
         {
             AdjustWindowRectExForDpi(lpRect, dwStyle, bMenu, dwExStyle, dpi);
             return;
@@ -159,10 +159,10 @@ internal static unsafe partial class Win32Interop
 
     public static bool ApplyTheme(IntPtr hwnd, bool useDark)
     {
-        if (!OSVersionHelper.IsWindowsAtLeast(10, 0, 17763)) // 1809
+        if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763)) // 1809
             return false;
 
-        if (!OSVersionHelper.IsWindowsAtLeast(10, 0, 18362)) //1903
+        if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362)) //1903
         {
             var res = fnAllowDarkModeForApp(hwnd, useDark);
             if (res == false)
