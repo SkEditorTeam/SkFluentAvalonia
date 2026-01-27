@@ -32,7 +32,7 @@ public partial class AppWindow : Window
         TemplateSettings = new AppWindowTemplateSettings();
         _titleBar = new AppWindowTitleBar(this);
 
-        if (OSVersionHelper.IsWindows() && !Design.IsDesignMode && !AlwaysFallback)
+        if (OperatingSystem.IsWindows() && !Design.IsDesignMode && !AlwaysFallback)
         {
             InitializeAppWindow();
         }

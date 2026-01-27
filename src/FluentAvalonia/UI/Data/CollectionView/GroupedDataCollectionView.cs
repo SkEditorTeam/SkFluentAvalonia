@@ -778,8 +778,7 @@ public sealed class GroupedDataCollectionView : ICollectionView, IAdvancedCollec
             if (_lastBinding != binding)
             {
                 _lastBinding = binding;
-                var ib = binding.Initiate(this, ValueProperty);
-                BindingOperations.Apply(this, ValueProperty, ib, null);
+                Bind(ValueProperty, binding);
             }
 
             return GetValue(ValueProperty);

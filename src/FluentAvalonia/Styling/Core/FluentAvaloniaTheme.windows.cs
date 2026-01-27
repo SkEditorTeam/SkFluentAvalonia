@@ -139,7 +139,7 @@ public partial class FluentAvaloniaTheme
         if (window == null)
             throw new ArgumentNullException(nameof(window));
 
-        if (!OSVersionHelper.IsWindows())
+        if (!OperatingSystem.IsWindows())
             return;
 
         try

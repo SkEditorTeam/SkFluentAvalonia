@@ -6,11 +6,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using FluentAvalonia.Interop;
 using FluentAvalonia.UI.Media;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace FluentAvalonia.Styling;
 
@@ -172,7 +170,7 @@ public partial class FluentAvaloniaTheme : Styles, IResourceProvider
         // explicitly disabled to enable setting the theme manually
         ResolveThemeAndInitializeSystemResources();
 
-        if (OSVersionHelper.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
             // Load this in all cases since with ThemeDictionaries, we always have a ref to the 
             // HighContrast dictionary
@@ -195,15 +193,15 @@ public partial class FluentAvaloniaTheme : Styles, IResourceProvider
             _platformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
         }
                         
-        if (OSVersionHelper.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
             theme = ResolveWindowsSystemSettings(_platformSettings);
         }
-        else if (OSVersionHelper.IsLinux())
+        else if (OperatingSystem.IsLinux())
         {
             theme = ResolveLinuxSystemSettings(_platformSettings);
         }
-        else if (OSVersionHelper.IsMacOS())
+        else if (OperatingSystem.IsMacOS())
         {
             theme = ResolveMacOSSystemSettings(_platformSettings);
         }
@@ -231,7 +229,7 @@ public partial class FluentAvaloniaTheme : Styles, IResourceProvider
 
     private void OnPlatformColorValuesChanged(object sender, PlatformColorValues e)
     {
-        if (OSVersionHelper.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
             TryLoadHighContrastThemeColors();
         }
@@ -254,15 +252,15 @@ public partial class FluentAvaloniaTheme : Styles, IResourceProvider
 
         if (!CustomAccentColor.HasValue && PreferUserAccentColor)
         {
-            if (OSVersionHelper.IsWindows())
+            if (OperatingSystem.IsWindows())
             {
                 TryLoadWindowsAccentColor();
             }
-            else if (OSVersionHelper.IsMacOS())
+            else if (OperatingSystem.IsMacOS())
             {
                 TryLoadMacOSAccentColor(_platformSettings);
             }
-            else if (OSVersionHelper.IsLinux())
+            else if (OperatingSystem.IsLinux())
             {
                 TryLoadLinuxAccentColor();
             }
@@ -351,7 +349,7 @@ public partial class FluentAvaloniaTheme : Styles, IResourceProvider
     {
         if (TextVerticalAlignmentOverrideBehavior == TextVerticalAlignmentOverride.Disabled ||
             (TextVerticalAlignmentOverrideBehavior == TextVerticalAlignmentOverride.EnabledNonWindows &&
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows)))
+            OperatingSystem.IsWindows()))
             return;
 
         // The following resources are added to remove the larger bottom margin/padding value
@@ -405,11 +403,11 @@ public partial class FluentAvaloniaTheme : Styles, IResourceProvider
         {
             if (PreferUserAccentColor)
             {
-                if (OSVersionHelper.IsWindows())
+                if (OperatingSystem.IsWindows())
                 {
                     TryLoadWindowsAccentColor();
                 }                
-                else if (OSVersionHelper.IsLinux())
+                else if (OperatingSystem.IsLinux())
                 {
                     TryLoadLinuxAccentColor();
                 }
