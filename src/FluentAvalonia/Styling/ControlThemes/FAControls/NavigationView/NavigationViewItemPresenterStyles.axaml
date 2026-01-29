@@ -38,6 +38,9 @@
                             <Border Name="SelectionIndicator"
                                     Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
                                     Opacity="0"
+                                    RenderOptions.BitmapInterpolationMode="HighQuality"
+                                    RenderOptions.EdgeMode="Aliased"
+                                    ClipToBounds="True"
                                     Width="{DynamicResource NavigationViewSelectionIndicatorWidth}"
                                     Height="{DynamicResource NavigationViewSelectionIndicatorHeight}"
                                     CornerRadius="{DynamicResource NavigationViewSelectionIndicatorRadius}" />
