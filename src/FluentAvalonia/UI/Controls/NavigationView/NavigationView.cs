@@ -3425,15 +3425,21 @@ public partial class NavigationView : HeaderedContentControl
             return;
         var comp = visual.Compositor;
 
-        Size size = indicator.Bounds.Size;
-        double dimension = IsTopNavigationView ? size.Width : size.Height;
+        var size = indicator.Bounds.Size;
+        var dimension = IsTopNavigationView ? size.Width : size.Height;
 
         double beginScale = 1f;
         double endScale = 1f;
-        if (IsTopNavigationView && Math.Abs(size.Width) > 0.001)
+        switch (IsTopNavigationView)
         {
-            beginScale = beginSize.Width / size.Width;
-            endScale = endSize.Width / size.Width;
+            case true when Math.Abs(size.Width) > 0.001:
+                beginScale = beginSize.Width / size.Width;
+                endScale = endSize.Width / size.Width;
+                break;
+            case false when Math.Abs(size.Height) > 0.001:
+                beginScale = beginSize.Height / size.Height;
+                endScale = endSize.Height / size.Height;
+                break;
         }
 
         // StepEasingFunction
@@ -3444,7 +3450,10 @@ public partial class NavigationView : HeaderedContentControl
         //winrt::float2 c_frame2point2 = winrt::float2(0.2f, 1.0f);
         var easing1 = new SplineEasing(0.9, 0.1, 1, 0.2);
         var easing2 = new SplineEasing(0.1, 0.9, 0.2, 1.0);
-        var step = new StepEasingFunction { Steps = 5 };
+    
+        var distance = Math.Abs(to - from);
+        int stepCount = CalculateStepCount(distance);
+        var step = new StepEasingFunction { Steps = stepCount };
         if (isOutgoing)
         {
             // fade the outgoing indicator so it looks nice when animating over the scroll area
@@ -3504,6 +3513,16 @@ public partial class NavigationView : HeaderedContentControl
             visual.StartAnimation("CenterPoint", centerAnim);
         }
     }
+    
+    private int CalculateStepCount(double distance)
+    {
+        const double baseDistance = 50.0;
+        const int minSteps = 3;
+        const int maxSteps = 30;
+    
+        var steps = (int)Math.Ceiling(5 * (distance / baseDistance));
+        return Math.Clamp(steps, minSteps, maxSteps);
+    }
 
     private void OnAnimationComplete()
     {
@@ -3526,6 +3545,8 @@ public partial class NavigationView : HeaderedContentControl
                 cv.Offset = new Vector3D(0, 0, 0);
                 cv.Scale = new Vector3D(1, 1, 1);
                 cv.Opacity = (float)desiredOpacity;
+                
+                cv.CenterPoint = new Vector3D(0, 0, 0); 
             }
         }
     }
@@ -3545,7 +3566,7 @@ public partial class NavigationView : HeaderedContentControl
                 else
                 {
                     cont.UpdateLayout();
-                    //cont.ApplyTemplate();
+                    cont.ApplyTemplate();
                     return cont.SelectionIndicator;
                 }
             }
@@ -4367,12 +4388,28 @@ public partial class NavigationView : HeaderedContentControl
 
     private class StepEasingFunction : Easing
     {
-        // TODO: What is the default step count for WinUI's StepEasingFunction
-        public int Steps { get; set; }
+        public int Steps { get; set; } = 5;
 
         public override double Ease(double progress)
         {
-            return Math.Round(progress * Steps) * (1 / Steps);
+            if (Steps <= 1)
+                return progress;
+        
+            var scaledProgress = progress * Steps;
+            var currentStep = (int)Math.Floor(scaledProgress);
+            var stepProgress = scaledProgress - currentStep;
+        
+            var smoothedStepProgress = SmoothStep(stepProgress);
+        
+            var stepValue = currentStep / (double)Steps;
+            var nextStepValue = Math.Min((currentStep + 1) / (double)Steps, 1.0);
+        
+            return stepValue + (nextStepValue - stepValue) * smoothedStepProgress;
+        }
+    
+        private static double SmoothStep(double t)
+        {
+            return t * t * (3.0 - 2.0 * t);
         }
     }
 }
