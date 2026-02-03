@@ -227,11 +227,10 @@ public partial class SettingsExpander : HeaderedItemsControl, ICommandSource
     
     private void ExpanderExpanding(object sender, CancelRoutedEventArgs e)
     {
-        if (ItemCount == 0 && IsClickEnabled)
-        {
-            e.Cancel = true;
-            e.Handled = true;
-        }
+        if (ItemCount != 0) return;
+        
+        e.Cancel = true;
+        e.Handled = true;
     }
 
     private void ExpanderToggleButtonClick(object sender, RoutedEventArgs e)
