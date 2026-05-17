@@ -19,13 +19,18 @@ namespace FluentAvalonia.UI.Windowing;
 /// </summary>
 public partial class FAAppWindow : Window
 {
+    /// <summary>
+    /// If changed to true, AppWindow will always fallback to the default Avalonia window
+    /// </summary>
+    public static bool AlwaysFallback { get; set; }
+    
     public FAAppWindow()
     {
         TemplateSettings = new FAAppWindowTemplateSettings();
         _titleBar = new FAAppWindowTitleBar(this);
         PseudoClasses.Add(":noFullScreen");
 
-        if (OperatingSystem.IsWindows() && !Design.IsDesignMode)
+        if (OperatingSystem.IsWindows() && !Design.IsDesignMode && !AlwaysFallback)
         {
             InitializeAppWindow();
         }
