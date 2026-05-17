@@ -64,43 +64,45 @@ internal unsafe class Win32WindowManager
 
     private unsafe void HandleRBUTTONUP(LPARAM lParam)
     {
-        var pt = PointFromLParam(lParam);
-
-        if (_window.HitTestTitleBar(pt.ToPoint(GetScaling())))
-        {
-            var sysMenu = GetSystemMenu((HWND)Hwnd, false);
-            bool isMax = _window.WindowState == WindowState.Maximized;
-
-            var mii = new MENUITEMINFO
-            {
-                cbSize = (uint)sizeof(MENUITEMINFO),
-                fMask = MIIM_STATE,
-                fState = MFS_ENABLED
-            };
-            // Always enabled
-            SetMenuItemInfo(sysMenu, (uint)SC_MINIMIZE, false, &mii);
-            SetMenuItemInfo(sysMenu, (uint)SC_CLOSE, false, &mii);
-
-            // Restore only enabled if maximized
-            mii.fState = (uint)(isMax ? MFS_ENABLED : MFS_DISABLED);
-            SetMenuItemInfo(sysMenu, (uint)SC_RESTORE, false, &mii);
-
-            // Only available if normal state
-            mii.fState = (uint)(isMax ? MFS_DISABLED : MFS_ENABLED);
-            SetMenuItemInfo(sysMenu, (uint)SC_MOVE, false, &mii);
-            SetMenuItemInfo(sysMenu, (uint)SC_SIZE, false, &mii);
-            SetMenuItemInfo(sysMenu, (uint)SC_MAXIMIZE, false, &mii);
-
-            SetMenuDefaultItem(sysMenu, uint.MaxValue, 0);
-
-            var scPt = _window.PointToScreen(pt.ToPoint(GetScaling()));
-
-            var ret = TrackPopupMenu(sysMenu, TPM_RETURNCMD, scPt.X, scPt.Y, 0, (HWND)Hwnd, null);
-            if (ret)
-            {
-                PostMessage((HWND)Hwnd, WM_SYSCOMMAND, (WPARAM)ret, 0);
-            }
-        }
+        // SkFluentAvalonia: removed
+        
+        // var pt = PointFromLParam(lParam);
+        //
+        // if (_window.HitTestTitleBar(pt.ToPoint(GetScaling())))
+        // {
+        //     var sysMenu = GetSystemMenu((HWND)Hwnd, false);
+        //     bool isMax = _window.WindowState == WindowState.Maximized;
+        //
+        //     var mii = new MENUITEMINFO
+        //     {
+        //         cbSize = (uint)sizeof(MENUITEMINFO),
+        //         fMask = MIIM_STATE,
+        //         fState = MFS_ENABLED
+        //     };
+        //     // Always enabled
+        //     SetMenuItemInfo(sysMenu, (uint)SC_MINIMIZE, false, &mii);
+        //     SetMenuItemInfo(sysMenu, (uint)SC_CLOSE, false, &mii);
+        //
+        //     // Restore only enabled if maximized
+        //     mii.fState = (uint)(isMax ? MFS_ENABLED : MFS_DISABLED);
+        //     SetMenuItemInfo(sysMenu, (uint)SC_RESTORE, false, &mii);
+        //
+        //     // Only available if normal state
+        //     mii.fState = (uint)(isMax ? MFS_DISABLED : MFS_ENABLED);
+        //     SetMenuItemInfo(sysMenu, (uint)SC_MOVE, false, &mii);
+        //     SetMenuItemInfo(sysMenu, (uint)SC_SIZE, false, &mii);
+        //     SetMenuItemInfo(sysMenu, (uint)SC_MAXIMIZE, false, &mii);
+        //
+        //     SetMenuDefaultItem(sysMenu, uint.MaxValue, 0);
+        //
+        //     var scPt = _window.PointToScreen(pt.ToPoint(GetScaling()));
+        //
+        //     var ret = TrackPopupMenu(sysMenu, TPM_RETURNCMD, scPt.X, scPt.Y, 0, (HWND)Hwnd, null);
+        //     if (ret)
+        //     {
+        //         PostMessage((HWND)Hwnd, WM_SYSCOMMAND, (WPARAM)ret, 0);
+        //     }
+        // }
     }
 
     private void OnPlatformColorValuesChanged(object sender, PlatformColorValues e)
