@@ -64,6 +64,9 @@ internal unsafe class Win32WindowManager
 
     private unsafe void HandleRBUTTONUP(LPARAM lParam)
     {
+        // SkFluentAvalonia: remove context menu
+        return;
+        
         var pt = PointFromLParam(lParam);
 
         if (_window.HitTestTitleBar(pt.ToPoint(GetScaling())))
