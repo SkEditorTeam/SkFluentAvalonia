@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using FluentAvalonia.Collections;
@@ -422,6 +423,11 @@ public partial class FATabView : TemplatedControl
 
     private void OnLoaded(object sender, RoutedEventArgs args)
     {
+        if (!s_activeTabViews.Contains(this))
+        {
+            s_activeTabViews.Add(this);
+        }
+        
         UpdateTabContent();
         //UpdateTabViewWithTearOutList();
         //AttachMoveSizeLoopEvents();
@@ -430,6 +436,7 @@ public partial class FATabView : TemplatedControl
 
     private void OnUnloaded(object sender, RoutedEventArgs args)
     {
+        s_activeTabViews.Remove(this);
         //UpdateTabViewWithTearOutList();
     }
 
@@ -836,6 +843,11 @@ public partial class FATabView : TemplatedControl
         {
             var tabDroppedArgs = new FATabViewTabDroppedOutsideEventArgs(item, tab);
             TabDroppedOutside?.Invoke(this, tabDroppedArgs);
+        }
+
+        foreach (var tabView in s_activeTabViews)
+        {
+            tabView.UpdateIsItemDraggedOver(false);
         }
 
         UpdateBottomBorderLineVisualStates();
@@ -1492,11 +1504,11 @@ public partial class FATabView : TemplatedControl
         var ab = _addButton;
         if (args.Key == Key.Right)
         {
-            args.Handled = MoveFocus(ab.FlowDirection == Avalonia.Media.FlowDirection.LeftToRight);
+            args.Handled = MoveFocus(ab.FlowDirection == FlowDirection.LeftToRight);
         }
         else if (args.Key == Key.Left)
         {
-            args.Handled = MoveFocus(ab.FlowDirection == Avalonia.Media.FlowDirection.RightToLeft);
+            args.Handled = MoveFocus(ab.FlowDirection == FlowDirection.RightToLeft);
         }
     }
 
@@ -1692,6 +1704,7 @@ public partial class FATabView : TemplatedControl
     // (WinUI) TODO: what is the right number and should this be customizable?
     private static double c_scrollAmount = 50d;
 
+    private static readonly List<FATabView> s_activeTabViews = new();
 
     class TabViewCommand : ICommand
     {
