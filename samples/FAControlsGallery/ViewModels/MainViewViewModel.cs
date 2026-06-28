@@ -181,7 +181,6 @@ public class NavigationFactory : IFANavigationPageFactory
         { "Range", () => new RangeControlsPage() },
         { "Menu", () => new MenuControlsPage() },
         { "View", () => new ViewControlsPage() },
-        { "Data", () => new DataControlsPage() },
         { "Misc", () => new MiscControlsPage() },
     };
 
