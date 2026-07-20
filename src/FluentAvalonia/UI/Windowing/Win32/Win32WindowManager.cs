@@ -67,6 +67,7 @@ internal unsafe class Win32WindowManager
         // SkFluentAvalonia: remove context menu
         return;
         
+#pragma warning disable CS0162 // Unreachable code detected
         var pt = PointFromLParam(lParam);
 
         if (_window.HitTestTitleBar(pt.ToPoint(GetScaling())))
@@ -107,6 +108,7 @@ internal unsafe class Win32WindowManager
                 PostMessage((HWND)Hwnd, WM_SYSCOMMAND, (WPARAM)ret, 0);
             }
         }
+#pragma warning restore CS0162 // Unreachable code detected
     }
 
     private void OnPlatformColorValuesChanged(object sender, PlatformColorValues e)
