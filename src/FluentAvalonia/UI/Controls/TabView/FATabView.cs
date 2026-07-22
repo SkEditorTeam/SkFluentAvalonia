@@ -737,6 +737,12 @@ public partial class FATabView : TemplatedControl
         if (_isSwitchingTabLocation)
             return;
 
+        if (_tabContentPresenter != null && (args.RemovedItems.Count > 0 || _listView.SelectedItem == null))
+        {
+            _tabContentPresenter.Content = null;
+            _tabContentPresenter.ContentTemplate = null;
+        }
+        
         SelectedIndex = _listView.SelectedIndex;
         SelectedItem = _listView.SelectedItem;
 
