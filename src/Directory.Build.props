@@ -1,20 +1,23 @@
 <Project>
   <PropertyGroup Label="Package Info">
-    <RepositoryUrl>https://github.com/amwx/FluentAvalonia</RepositoryUrl>
-    <Description>Control library focused on fluent design and bringing more WinUI controls into Avalonia </Description>
-    <PackageTags>c-sharp;xaml;cross-platform;dotnet;dotnetcore;avalonia;avaloniaui;fluent;fluent-design</PackageTags>
+    <RepositoryUrl>https://github.com/NotroDev/SkFluentAvalonia</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/NotroDev/SkFluentAvalonia</PackageProjectUrl>
+    <Description>Fork of FluentAvalonia maintained for SkEditor. Brings fluent design and WinUI controls into Avalonia with custom tweaks.</Description>
+    <PackageTags>c-sharp;xaml;cross-platform;dotnet;avalonia;avaloniaui;fluent;skeditor</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>3.0.2</Version>
     <AssemblyVersion>3.0.2.0</AssemblyVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <!-- Add Package Icon -->
   <PropertyGroup>
-    <PackageIcon>FAIcon.png</PackageIcon>
+    <PackageIcon>SkFA.png</PackageIcon>
   </PropertyGroup>
-  
-  <ItemGroup Label="PackageIcon">
-    <None Include="$(MSBuildThisFileDirectory)/../Assets/FAIcon.png" Pack="true" Visible="false" PackagePath=""/>
+
+  <ItemGroup Label="Package Assets">
+    <None Include="$(MSBuildThisFileDirectory)/../Assets/SkFA.png" Pack="true" Visible="false" PackagePath=""/>
+    <None Include="$(MSBuildThisFileDirectory)/../README.md" Pack="true" Visible="false" PackagePath=""/>
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)/SourceLink.props"/>
