@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Package Info">
-    <RepositoryUrl>https://github.com/NotroDev/SkFluentAvalonia</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/NotroDev/SkFluentAvalonia</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SkEditorTeam/SkFluentAvalonia</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/SkEditorTeam/SkFluentAvalonia</PackageProjectUrl>
     <Description>Fork of FluentAvalonia maintained for SkEditor. Brings fluent design and WinUI controls into Avalonia with custom tweaks.</Description>
     <PackageTags>c-sharp;xaml;cross-platform;dotnet;avalonia;avaloniaui;fluent;skeditor</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
