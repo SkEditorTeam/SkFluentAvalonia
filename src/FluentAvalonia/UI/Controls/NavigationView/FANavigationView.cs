@@ -3281,6 +3281,9 @@ public partial class FANavigationView : HeaderedContentControl
     // when the layout is invalidated as it's called in OnLayoutUpdated.
     private void AnimateSelectionChanged(object nextItem)
     {
+        // SkFluentAvalonia: replace NavigationView indicator animation
+        return;
+        
         // If we are delaying animation due to item movement in top nav overflow or
         // the template is not applied, dont do anything
         if (_lastSelectedItemPendingAnimationInTopNav != null || !_appliedTemplate)
