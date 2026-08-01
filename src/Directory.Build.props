@@ -5,8 +5,8 @@
     <Description>Fork of FluentAvalonia maintained for SkEditor. Brings fluent design and WinUI controls into Avalonia with custom tweaks.</Description>
     <PackageTags>c-sharp;xaml;cross-platform;dotnet;avalonia;avaloniaui;fluent;skeditor</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>3.0.3</Version>
-    <AssemblyVersion>3.0.3.0</AssemblyVersion>
+    <Version>3.0.4</Version>
+    <AssemblyVersion>3.0.4.0</AssemblyVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
