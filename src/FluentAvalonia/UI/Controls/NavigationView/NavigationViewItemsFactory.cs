@@ -37,13 +37,18 @@ internal class NavigationViewItemsFactory : FAElementFactory
     // If the resolved element is not derived from NavigationViewItemBase, wrap in a NavigationViewItem before returning.
     protected override Control GetElementCore(FAElementFactoryGetArgs args)
     {
-        object newContent = args.Data;
+        if (args.Data is FANavigationViewItemBase directNvib)
+        {
+            return directNvib;
+        }
+        
         if (_settingsItem != null && _settingsItem == args.Data)
         {
             //This is the settings item, return it directly
             return args.Data as FANavigationViewItem;
         }
 
+        object newContent = args.Data;
         if (_itemTemplateWrapper != null)
         {
             newContent = _itemTemplateWrapper.GetElement(args);
