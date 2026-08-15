@@ -8,6 +8,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <PackageId>SkFluentAvalonia</PackageId>
     <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
