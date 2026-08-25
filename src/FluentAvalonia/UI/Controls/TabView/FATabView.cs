@@ -671,33 +671,16 @@ public partial class FATabView : TemplatedControl
                     // SelectedIndex might also already be -1
                     if (selectedIndex == -1 || selectedIndex == args.OldStartingIndex)
                     {
-                        // Find the closest tab to select instead
                         int startIndex = args.OldStartingIndex;
                         if (startIndex >= numItems)
                         {
                             startIndex = numItems - 1;
                         }
-                        int index = startIndex;
 
-                        do
+                        if (startIndex >= 0 && startIndex < numItems)
                         {
-                            var nextitem = ContainerFromIndex(index) as FATabViewItem;
-
-                            if (nextitem != null && nextitem.IsEffectivelyEnabled
-                                && nextitem.IsEffectivelyVisible)
-                            {
-                                SelectedItem = ItemFromContainer(nextitem);
-                                break;
-                            }
-
-                            // try the next item
-                            index++;
-                            if (index >= numItems)
-                            {
-                                index = 0;
-                            }
+                            SelectedItem = TabItems[startIndex];
                         }
-                        while (index != startIndex);
                     }
                 }
 
@@ -736,20 +719,11 @@ public partial class FATabView : TemplatedControl
         // when the ListView loaded handler is called
         if (_isSwitchingTabLocation)
             return;
-
-        if (_tabContentPresenter != null && (args.RemovedItems.Count > 0 || _listView.SelectedItem == null))
-        {
-            _tabContentPresenter.Content = null;
-            _tabContentPresenter.ContentTemplate = null;
-        }
         
         SelectedIndex = _listView.SelectedIndex;
         SelectedItem = _listView.SelectedItem;
 
-        // Fix for GH714. Closing the active tab would not update the current tab content. Seems to be caused by
-        // a delay in the VirtualizingStackPanel where ItemFromContainer would return the old container (we closed)
-        // on the new SelectedIndex. So ensure the VSP is up to date before we switch tab content.
-        Dispatcher.UIThread.Post(UpdateTabContent);
+        UpdateTabContent();
 
         SelectionChanged?.Invoke(this, args);
     }
@@ -874,42 +848,64 @@ public partial class FATabView : TemplatedControl
         {
             var tvi = (SelectedItem as FATabViewItem) ?? ContainerFromItem(SelectedItem) as FATabViewItem;
 
-            if (tvi != null)
+            if (tvi == null)
             {
-                // If the focus was in the old tab content, we will lose focus when it is removed from the visual tree.
-                // We should move the focus to the new tab content.
-                // The new tab content is not available at the time of the LosingFocus event, so we need to
-                // move focus later.
-                bool shouldMoveFocusToNewTab = false;
-                _tabContentPresenter.LosingFocus += TabContentPresenterLostFocus;
+                _listView?.UpdateLayout();
+                tvi = SelectedItem as FATabViewItem ?? ContainerFromItem(SelectedItem) as FATabViewItem;
 
-                void TabContentPresenterLostFocus(object sender, FocusChangingEventArgs args)
+                if (tvi == null)
                 {
-                    _tabContentPresenter.LosingFocus -= TabContentPresenterLostFocus;
-                    shouldMoveFocusToNewTab = true;
+                    Dispatcher.UIThread.Post(UpdateTabContent, DispatcherPriority.Loaded);
+                    return;
                 }
+            }
 
+            // If the focus was in the old tab content, we will lose focus when it is removed from the visual tree.
+            // We should move the focus to the new tab content.
+            // The new tab content is not available at the time of the LosingFocus event, so we need to
+            // move focus later.
+            var shouldMoveFocusToNewTab = false;
+            _tabContentPresenter.LosingFocus += TabContentPresenterLostFocus;
+
+            void TabContentPresenterLostFocus(object sender, FocusChangingEventArgs args)
+            {
+                _tabContentPresenter.LosingFocus -= TabContentPresenterLostFocus;
+                shouldMoveFocusToNewTab = true;
+            }
+
+            if (SelectedItem is FATabViewItem directTvi)
+            {
+                _tabContentPresenter.Content = directTvi.Content;
+                _tabContentPresenter.ContentTemplate = directTvi.ContentTemplate;
+            }
+            else if (tvi is { Content: not null } && !ReferenceEquals(tvi.Content, tvi.DataContext))
+            {
                 _tabContentPresenter.Content = tvi.Content;
                 _tabContentPresenter.ContentTemplate = tvi.ContentTemplate;
+            }
+            else
+            {
+                _tabContentPresenter.Content = SelectedItem;
+                _tabContentPresenter.ContentTemplate = tvi?.ContentTemplate;
+            }
 
-                // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
-                // into the live visual tree.
-                
-                if (shouldMoveFocusToNewTab)
-                {
-                    var focusable = TopLevel.GetTopLevel(this)?.FocusManager?.FindNextElement(NavigationDirection.Next,
-                        new FindNextElementOptions { SearchRoot = _tabContentPresenter });
-                    
-                    // If there is nothing focusable in the new tab, just move focus to the TabViewItem itself.
-                    focusable ??= tvi;
+            // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
+            // into the live visual tree.
 
-                    focusable?.Focus(NavigationMethod.Unspecified);
-                }
-                else
-                {
-                    // Ensure this is disconnected
-                    _tabContentPresenter.LosingFocus -= TabContentPresenterLostFocus;
-                }
+            if (shouldMoveFocusToNewTab)
+            {
+                var focusable = TopLevel.GetTopLevel(this)?.FocusManager?.FindNextElement(NavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = _tabContentPresenter });
+
+                // If there is nothing focusable in the new tab, just move focus to the TabViewItem itself.
+                focusable ??= tvi;
+
+                focusable?.Focus();
+            }
+            else
+            {
+                // Ensure this is disconnected
+                _tabContentPresenter.LosingFocus -= TabContentPresenterLostFocus;
             }
         }       
     }
