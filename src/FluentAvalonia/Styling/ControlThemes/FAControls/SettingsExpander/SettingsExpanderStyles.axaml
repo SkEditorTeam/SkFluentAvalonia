@@ -146,6 +146,10 @@
         <Style Selector="^:expanded /template/ Border#ExpanderContent">
             <Setter Property="IsVisible" Value="True" />
         </Style>
+        
+        <Style Selector="^:not(:expanded) /template/ Border#ExpanderContent">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
     </ControlTheme>
 
     <ControlTemplate TargetType="ui:FASettingsExpander"
